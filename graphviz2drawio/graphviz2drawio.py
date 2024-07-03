@@ -25,6 +25,8 @@ def convert(graph_to_convert, layout_prog="dot"):
 
     svg_graph = graph.draw(prog=layout_prog, format="svg")
     nodes, edges, clusters = parse_nodes_edges_clusters(svg_graph)
+    print(graph_nodes)
+    print(graph_nodes)
     [e.enrich_from_graph(graph_edges[e.gid]) for e in edges]
     [n.enrich_from_graph(graph_nodes[n.gid]) for n in nodes.values()]
 

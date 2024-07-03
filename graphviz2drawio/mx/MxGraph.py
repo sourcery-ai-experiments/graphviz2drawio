@@ -17,24 +17,41 @@ class MxGraph:
 
         # Add nodes first so edges are drawn on top
         for node in nodes.values():
+            print(node)
             self.add_node(node)
         for edge in edges:
+            print(edge)
             self.add_edge(edge)
 
     def add_edge(self, edge):
         source, target = self.get_edge_source_target(edge)
+        if source is None and target:
+            source = target
+            target = None
+
         style = self.get_edge_style(edge, source, target)
-        edge_element = ET.SubElement(
-            self.root,
-            MxConst.CELL,
-            attrib={
+        attrib = (
+            {
                 "id": edge.sid,
                 "style": style,
                 "parent": "1",
                 "edge": "1",
                 "source": source.sid,
                 "target": target.sid,
-            },
+            }
+            if target
+            else {
+                "id": edge.sid,
+                "style": style,
+                "parent": "1",
+                "edge": "1",
+                "source": source.sid,
+            }
+        )
+        edge_element = ET.SubElement(
+            self.root,
+            MxConst.CELL,
+            attrib=attrib,
         )
 
         if edge.label:
@@ -59,9 +76,9 @@ class MxGraph:
 
     def get_edge_source_target(self, edge):
         if edge.dir == DotAttr.BACK:
-            return self.nodes[edge.to], self.nodes[edge.fr]
+            return self.nodes.get(edge.to), self.nodes.get(edge.fr)
         else:
-            return self.nodes[edge.fr], self.nodes[edge.to]
+            return self.nodes.get(edge.fr), self.nodes.get(edge.to)
 
     def get_edge_style(self, edge, source_node, target_node):
         end_arrow = MxConst.BLOCK
@@ -78,16 +95,26 @@ class MxGraph:
         start_curve, end_curve = edge.curve_start_end()
         curved = 1 if edge.curve.cb is not None else 0
 
-        style = Styles.EDGE.format(
-            entry_x=target_node.rect.x_ratio(end_curve.real),
-            entry_y=target_node.rect.y_ratio(end_curve.imag),
-            exit_x=source_node.rect.x_ratio(start_curve.real),
-            exit_y=source_node.rect.y_ratio(start_curve.imag),
-            end_arrow=end_arrow,
-            dashed=dashed,
-            end_fill=end_fill,
-            curved=curved,
-        )
+        if target_node:
+            style = Styles.EDGE.format(
+                entry_x=target_node.rect.x_ratio(end_curve.real),
+                entry_y=target_node.rect.y_ratio(end_curve.imag),
+                exit_x=source_node.rect.x_ratio(start_curve.real),
+                exit_y=source_node.rect.y_ratio(start_curve.imag),
+                end_arrow=end_arrow,
+                dashed=dashed,
+                end_fill=end_fill,
+                curved=curved,
+            )
+        else:
+            style = Styles.EDGE_INVIS.format(
+                exit_x=source_node.rect.x_ratio(start_curve.real),
+                exit_y=source_node.rect.y_ratio(start_curve.imag),
+                end_arrow=end_arrow,
+                dashed=dashed,
+                end_fill=end_fill,
+                curved=curved,
+            )
 
         return style
 

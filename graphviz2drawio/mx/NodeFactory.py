@@ -1,3 +1,5 @@
+from xml.etree import ElementTree
+
 from graphviz2drawio.models import SVG
 from graphviz2drawio.models.Rect import Rect
 from .Node import Node
@@ -59,6 +61,7 @@ class NodeFactory:
             )
             shape = Shape.RECT
         else:
+            print(ElementTree.tostring(g))
             rect = self.rect_from_ellipse_svg(SVG.get_first(g, "ellipse").attrib)
             shape = Shape.ELLIPSE
 

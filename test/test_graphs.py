@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from graphviz2drawio import graphviz2drawio
 import xml.etree.ElementTree as ET
 import re
@@ -142,6 +144,27 @@ def test_datastruct():
     elements = check_xml_top(root)
 
     assert elements[-1].attrib["source"] == "node12"
+    assert elements[-1].attrib["target"] == "node2"
+
+
+def test_invisible():
+    file = "test/directed/invisible.gv.txt"
+    xml = graphviz2drawio.convert(file)
+    print(xml)
+    Path("test/directed/invisible.gv.xml").write_text(xml)
+
+    root = ET.fromstring(xml)
+    elements = check_xml_top(root)
+    assert elements[-1].attrib["target"] == "node7"
+
+
+def test_very_many_nodes():
+    file = "test/directed/shape_path.gv.txt"
+    xml = graphviz2drawio.convert(file)
+    print(xml)
+
+    root = ET.fromstring(xml)
+    elements = check_xml_top(root)
     assert elements[-1].attrib["target"] == "node2"
 
 
